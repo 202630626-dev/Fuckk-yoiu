@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vincent's Starry Night Refrigerator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Noto+Serif+KR:wght@500;700&display=swap');
+
+        :root {
+            --bg-canvas: #050b14;
+            --oil-blue-dark: #0a1628;
+            --oil-blue-mid: #12284c;
+            --oil-blue-light: #1e3a6d;
+            --star-gold: #f59e0b;
+            --star-yellow: #fde047;
+            --star-glow: rgba(253, 224, 71, 0.4);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+            --impasto-border: rgba(245, 158, 11, 0.4);
+            --fridge-inner: #040810;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Noto Serif KR', 'Pretendard', serif;
+            background-color: var(--bg-canvas);
+            /* 고흐 특유의 소용돌이치는 유화 밤하늘 붓터치 배경 시각화 */
+            background-image: 
+                radial-gradient(circle at 80% 15%, rgba(253, 224, 71, 0.25) 0%, transparent 40%),
+                radial-gradient(circle at 20% 75%, rgba(30, 58, 109, 0.5) 0%, transparent 50%),
+                repeating-radial-gradient(circle at 50% 50%, rgba(18, 40, 76, 0.3) 0, rgba(18, 40, 76, 0.3) 20px, rgba(10, 22, 40, 0.4) 20px, rgba(10, 22, 40, 0.4) 40px),
+                repeating-linear-gradient(45deg, rgba(245, 158, 11, 0.04) 0px, rgba(245, 158, 11, 0.04) 4px, transparent 4px, transparent 12px),
+                repeating-linear-gradient(-45deg, rgba(14, 165, 233, 0.05) 0px, rgba(14, 165, 233, 0.05) 6px, transparent 6px, transparent 18px);
+            background-attachment: fixed;
+            color: var(--text-light); 
+            padding: 30px 20px; 
+            line-height: 1.5; 
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+        
+        /* 캔버스 액자 느낌의 굵은 임파스토 카드 */
+        .card { 
+            background: rgba(10, 22, 40, 0.85); 
+            backdrop-filter: blur(10px);
+            padding: 28px; 
+            border-radius: 16px; 
+            border: 2px solid var(--impasto-border); 
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.8),
+                inset 0 0 20px rgba(245, 158, 11, 0.1),
+                inset 0 2px 4px rgba(253, 224, 71, 0.3); 
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 두꺼운 붓자국 질감 효과 Overlay */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.03) 0px,
+                rgba(255, 255, 255, 0.03) 3px,
+                transparent 3px,
+                transparent 8px
+            );
+            pointer-events: none;
+        }
+
+        .full-width { grid-column: span 2; }
+        
+        h2 { 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            margin-bottom: 20px; 
+            color: var(--text-light); 
+            border-bottom: 2px solid var(--impasto-border); 
+            padding-bottom: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            text-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+        }
+
+        h2 .gogh-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            font-size: 0.95rem;
+            color: var(--star-yellow);
+            letter-spacing: 0.15em;
+            text-shadow: 0 0 10px var(--star-gold);
+        }
+        
+        .form-group { display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 2; }
+        .form-row { display: flex; gap: 12px; }
+        .form-row > * { flex: 1; }
+        
+        input, select, button { 
+            padding: 12px 14px; 
+            border: 2px solid var(--impasto-border); 
+            border-radius: 8px; 
+            font-size: 0.9rem; 
+            background-color: rgba(5, 11, 20, 0.9); 
+            color: var(--text-light); 
+            transition: all 0.3s ease; 
+            font-family: inherit;
+        }
+        input::placeholder { color: #64748b; }
+        input:focus, select:focus { 
+            outline: none; 
+            border-color: var(--star-yellow); 
+            box-shadow: 0 0 15px var(--star-glow); 
+        }
+        
+        /* 붓터치 느낌의 강렬한 임파스토 버튼 */
+        button { 
+            background: linear-gradient(135deg, #b45309 0%, #f59e0b 50%, #fde047 100%); 
+            color: #0b1322; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: 700; 
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4), inset 0 2px 2px rgba(255,255,255,0.5);
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+        button:hover { 
+            background: linear-gradient(135deg, #f59e0b 0%, #fde047 100%); 
+            box-shadow: 0 6px 25px rgba(253, 224, 71, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        /* --- 반 고흐 유화 캔버스 냉장고 --- */
+        .fridge-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .fridge-container {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            height: 520px;
+            perspective: 1200px;
+        }
+
+        .fridge-inside {
+            width: 100%;
+            height: 100%;
+            background-color: var(--fridge-inner);
+            border: 3px solid var(--impasto-border);
+            border-radius: 16px;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 12px;
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.95);
+            overflow-y: auto;
+        }
+
+        .food-card {
+            background: rgba(18, 40, 76, 0.85);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            position: relative;
+            padding: 8px 4px;
+            animation: fadeIn 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        .food-icon-stack {
+            position: relative;
+            width: 60px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stacked-icon {
+            position: absolute;
+            font-size: 28px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.9));
+            transition: all 0.2s ease;
+        }
+
+        .food-count-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: linear-gradient(135deg, #d97706, #fde047);
+            color: #000;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+            z-index: 10;
+        }
+
+        .food-label { font-size: 11px; color: var(--text-dim); font-weight: 500; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; margin-top: 4px; }
+
+        /* 고흐의 유화 도어 (유화 물감 텍스처 패널) */
+        .fridge-door {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 75% 25%, rgba(253, 224, 71, 0.35) 0%, transparent 55%),
+                radial-gradient(circle at 25% 75%, rgba(14, 165, 233, 0.4) 0%, transparent 60%),
+                linear-gradient(135deg, #12284c 0%, #0a1628 100%);
+            border: 3px solid var(--star-gold);
+            border-radius: 16px;
+            transform-origin: left;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 20px;
+            box-shadow: 
+                15px 0 40px rgba(0,0,0,0.8), 
+                inset 0 0 25px rgba(253, 224, 71, 0.2),
+                inset 0 3px 5px rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            z-index: 20;
+            overflow: hidden;
+        }
+
+        /* 도어 상 두껍게 스쳐 지나간 붓 터치 레이어 */
+        .fridge-door::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: repeating-linear-gradient(
+                60deg,
+                transparent,
+                transparent 12px,
+                rgba(245, 158, 11, 0.08) 12px,
+                rgba(245, 158, 11, 0.08) 24px
+            );
+            transform: rotate(15deg);
+            pointer-events: none;
+        }
+
+        .handle {
+            width: 12px;
+            height: 100px;
+            background: linear-gradient(to bottom, #fde047, #f59e0b, #78350f);
+            border-radius: 6px;
+            box-shadow: 0 0 12px var(--star-gold), -2px 0 5px rgba(0,0,0,0.6);
+            position: relative;
+            z-index: 25;
+        }
+
+        .fridge-container.open .fridge-door {
+            transform: rotateY(-115deg);
+        }
+
+        .fridge-controls {
+            margin-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .btn-toggle {
+            background: rgba(18, 40, 76, 0.8);
+            color: var(--text-light);
+            border: 2px solid var(--impasto-border);
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+        }
+        .btn-toggle:hover { 
+            background: var(--impasto-border); 
+            color: var(--star-yellow);
+        }
+
+        .status-capacity {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--star-yellow);
+            text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+        }
+
+        /* --- 유화 액자 스타일 테이블 --- */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; position: relative; z-index: 2; }
+        th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid var(--impasto-border); font-size: 0.88rem; }
+        th { color: var(--star-yellow); font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; text-shadow: 0 0 5px rgba(245, 158, 11, 0.3); }
+        td { color: var(--text-light); }
+        
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
+        .badge-category { background: rgba(18, 40, 76, 0.9); color: var(--star-yellow); border: 1px solid var(--impasto-border); }
+        .badge-ready { background: rgba(16, 185, 129, 0.25); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.5); }
+        .badge-dynamic { background: rgba(14, 165, 233, 0.25); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.5); }
+        .badge-partial { background: rgba(245, 158, 11, 0.25); color: var(--star-yellow); border: 1px solid var(--impasto-border); }
+        
+        .d-day { font-weight: 700; }
+        .d-day.urgent { color: #f87171; text-shadow: 0 0 8px rgba(248, 113, 113, 0.5); }
+        .d-day.safe { color: #34d399; text-shadow: 0 0 8px rgba(52, 211, 153, 0.4); }
+        
+        /* --- 레시피 카드 --- */
+        .recipe-card { 
+            background: rgba(5, 11, 20, 0.8); 
+            border: 1px solid var(--impasto-border); 
+            border-left: 5px solid #10b981; 
+            border-radius: 10px; 
+            padding: 16px; 
+            margin-bottom: 12px; 
+            transition: all 0.3s ease; 
+            position: relative;
+            z-index: 2;
+        }
+        .recipe-card:hover { transform: translateY(-3px); border-color: var(--star-yellow); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.25); }
+        .recipe-card.dynamic { border-left-color: #38bdf8; }
+        .recipe-card.partial { border-left-color: var(--star-yellow); }
+        
+        .recipe-title { font-weight: 700; color: var(--text-light); font-size: 0.95rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .recipe-ingredients { font-size: 0.85rem; color: var(--text-dim); line-height: 1.5; }
+        .missing-ing { color: #f87171; font-weight: 700; }
+        .analysis-tag { font-size: 0.8rem; color: var(--star-yellow); margin-top: 8px; font-style: italic; }
+
+        .btn-delete { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; font-size: 0.78rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .btn-delete:hover { background-color: #ef4444; color: #ffffff; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+        .empty-msg { color: var(--text-dim); font-size: 0.88rem; text-align: center; padding: 40px 0; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 입력 폼 & 3D 고흐 냉장고 -->
+    <div class="card">
+        <h2>보관 항목 추가 <span class="gogh-title">VINCENT</span></h2>
+        <form id="ingredient-form" class="form-group">
+            <input type="text" id="food-name" placeholder="품목명 입력 (예: 당근, 콜라, 삼겹살)" required>
+            
+            <div class="form-row">
+                <select id="food-location">
+                    <option value="냉장실">냉장실</option>
+                    <option value="냉동실">냉동실</option>
+                    <option value="신선실">신선실</option>
+                    <option value="실온보관">실온보관</option>
+                </select>
+                <input type="number" id="food-quantity" min="1" max="10" value="1" placeholder="수량" required>
+            </div>
+
+            <input type="date" id="food-expiry" required>
+            <button type="submit">냉장고에 등록</button>
+        </form>
+
+        <div class="fridge-wrapper">
+            <div class="fridge-container" id="fridge">
+                <div class="fridge-inside" id="fridge-inside"></div>
+                <div class="fridge-door" onclick="toggleDoor()">
+                    <div class="handle"></div>
+                </div>
+            </div>
+            <div class="fridge-controls">
+                <button type="button" class="btn-toggle" onclick="toggleDoor()">도어 개폐</button>
+                <span class="status-capacity" id="capacity-text">수납 현황: 0 / 12</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 맞춤 추천 -->
+    <div class="card">
+        <h2>맞춤 요리 추천 <span id="recipe-count" style="font-size: 0.85rem; color: var(--star-yellow); font-weight: normal;">(0)</span></h2>
+        <div id="recipe-list">
+            <p class="empty-msg">보관 항목을 등록하면 추천 레시피가 연산됩니다.</p>
+        </div>
+    </div>
+
+    <!-- 현황 리스트 -->
+    <div class="card full-width">
+        <h2>전체 보관 현황 <span class="gogh-title">STARRY NIGHT</span></h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>품목명</th>
+                    <th>수량</th>
+                    <th>분류</th>
+                    <th>보관 위치</th>
+                    <th>소비기한</th>
+                    <th>남은 기한</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="inventory-table">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const MAX_SLOTS = 12;
+
+    const nonFoodList = [
+        '사람', '책상', '의자', '컴퓨터', '핸드폰', '스마트폰', '휴지', '종이', 
+        '세제', '샴푸', '비누', '신발', '옷', '양말', '연필', '볼펜', '안경', 
+        '시계', '플라스틱', '유리', '철', '흙', '모래', '건전지', '가위', '칼', '수저',
+        '마우스', '키보드', '책', '가방', '지갑', '약', '화장품', '치약', '칫솔'
+    ];
+
+    const categoryDb = {
+        '감자': '구황작물', '고구마': '구황작물', '옥수수': '구황작물',
+        '양파': '채소', '당근': '채소', '대파': '채소', '쪽파': '채소', '마늘': '채소', '다진마늘': '채소',
+        '배추': '채소', '무': '채소', '상추': '채소', '깻잎': '채소', '시금치': '채소', '애호박': '채소', '오이': '채소',
+        '고추': '채소', '파프리카': '채소', '토마토': '채소', '버섯': '채소', '콩나물': '채소', '숙주': '채소',
+        '돼지고기': '육류', '목살': '육류', '삼겹살': '육류', '소고기': '육류', '닭고기': '육류', '닭가슴살': '육류',
+        '오징어': '수산물', '새우': '수산물', '고등어': '수산물', '연어': '수산물', '조개': '수산물',
+        '계란': '알류', '달걀': '알류', '두부': '콩가공품', '우유': '유제품', '치즈': '유제품', '버터': '유제품',
+        '밥': '곡류', '쌀': '곡류', '식빵': '곡류', '빵': '곡류', '떡': '곡류', '라면': '면류', '파스타': '면류',
+        '김치': '발효식품', '스팸': '가공식품', '햄': '가공식품', '소시지': '가공식품', '어묵': '가공식품', '참치캔': '가공식품',
+        '사과': '과일', '바나나': '과일', '딸기': '과일', '귤': '과일', '포도': '과일',
+        '된장': '양념/소스', '고추장': '양념/소스', '간장': '양념/소스', '굴소스': '양념/소스', '케찹': '양념/소스', 
+        '마요네즈': '양념/소스', '참기름': '양념/소스', '식초': '양념/소스', '설탕': '양념/소스', '소금': '양념/소스', 
+        '고춧가루': '양념/소스', '불닭소스': '양념/소스', '콜라': '음료', '사이다': '음료', '주스': '음료', '맥주': '음료/주류'
+    };
+
+    const emojiDb = {
+        '사과': '🍎', '바나나': '🍌', '딸기': '🍓', '귤': '🍊', '포도': '🍇', '토마토': '🍅', '수박': '🍉',
+        '당근': '🥕', '감자': '🥔', '고구마': '🍠', '옥수수': '🌽', '고추': '🌶️', '오이': '🥒', '버섯': '🍄', '마늘': '🧄', '양파': '🧅',
+        '돼지고기': '🥩', '삼겹살': '🥩', '목살': '🥩', '소고기': '🥩', '닭고기': '🍗', '닭가슴살': '🍗',
+        '생선': '🐟', '고등어': '🐟', '오징어': '🦑', '새우': '🦐',
+        '계란': '🥚', '달걀': '🥚', '우유': '🥛', '치즈': '🧀', '버터': '🧈',
+        '밥': '🍚', '식빵': '🍞', '빵': '🍞', '라면': '🍜', '파스타': '🍝',
+        '피자': '🍕', '스팸': '🥫', '참치캔': '🥫', '과자': '🍪',
+        '콜라': '🥤', '사이다': '🥤', '주스': '🧃', '맥주': '🍺', '음료': '🥤'
+    };
+
+    const presetRecipes = [
+        { name: '당근 라페 샐러드', ingredients: [['당근']], note: '식초와 올리브유를 곁들인 클래식 샐러드' },
+        { name: '당근 야채전', ingredients: [['당근']], note: '바삭하게 부쳐내는 한식 채소전' },
+        { name: '모듬 야채 볶음밥', ingredients: [['밥'], ['당근', '양파', '대파']], note: '남은 채소를 효율적으로 소진하는 메뉴' },
+        { name: '굴소스 채소 볶음', ingredients: [['굴소스'], ['당근', '양파', '버섯', '애호박']], note: '감칠맛 중심의 정갈한 반찬' },
+        { name: '굴소스 계란 볶음밥', ingredients: [['밥'], ['계란', '달걀'], ['굴소스']], note: '간단하고 신속하게 완성하는 한 끼' },
+        { name: '간장 계란 덮밥', ingredients: [['밥'], ['계란', '달걀'], ['간장']], note: '최소한의 재료로 조리하는 담백한 덮밥' },
+        { name: '스팸 마요 덮밥', ingredients: [['밥'], ['스팸', '햄'], ['마요네즈']], note: '풍미 깊은 덮밥 메인 요리' },
+        { name: '제육 볶음', ingredients: [['돼지고기', '삼겹살', '목살'], ['고추장', '간장', '고춧가루']], note: '한식 메인 고기 요리' },
+        { name: '소시지 야채 볶음', ingredients: [['소시지', '비엔나'], ['케찹'], ['양파', '당근', '파프리카']], note: '채소와 가공육의 균형 잡힌 볶음' },
+        { name: '정통 카레라이스', ingredients: [['밥'], ['당근', '감자', '양파']], note: '다양한 구황작물과 채소 소모에 최적화' }
+    ];
+
+    let inventory = [];
+
+    function normalizeName(name) {
+        return name.replace(/\s+/g, '').toLowerCase();
+    }
+
+    function getEmoji(rawName) {
+        const cleanName = normalizeName(rawName);
+        if (emojiDb[rawName]) return emojiDb[rawName];
+        for (let key in emojiDb) {
+            if (cleanName.includes(normalizeName(key))) return emojiDb[key];
+        }
+        return '🍱';
+    }
+
+    function getCategory(rawName) {
+        const cleanName = normalizeName(rawName);
+        if (nonFoodList.some(nonFood => cleanName.includes(nonFood))) return null;
+        if (categoryDb[rawName]) return categoryDb[rawName];
+
+        for (let key in categoryDb) {
+            if (cleanName.includes(normalizeName(key))) return categoryDb[key];
+        }
+
+        if (cleanName.endsWith('소스') || cleanName.endsWith('장') || cleanName.endsWith('유') || cleanName.endsWith('가루')) return '양념/소스';
+        if (cleanName.endsWith('고기') || cleanName.endsWith('살')) return '육류';
+        if (cleanName.endsWith('채소') || cleanName.endsWith('나물') || cleanName.endsWith('버섯')) return '채소';
+
+        return '일반 식품';
+    }
+
+    function toggleDoor() {
+        const fridge = document.getElementById('fridge');
+        fridge.classList.toggle('open');
+    }
+
+    document.getElementById('ingredient-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        if (inventory.length >= MAX_SLOTS) {
+            alert(`수납 용량이 초과되었습니다. (최대 ${MAX_SLOTS}개)`);
+            return;
+        }
+        
+        const nameInput = document.getElementById('food-name').value.trim();
+        const location = document.getElementById('food-location').value;
+        const quantity = parseInt(document.getElementById('food-quantity').value, 10) || 1;
+        const expiry = document.getElementById('food-expiry').value;
+
+        const category = getCategory(nameInput);
+
+        if (!category) {
+            alert(`'${nameInput}'은(는) 식료품 항목이 아닙니다.`);
+            return;
+        }
+
+        const item = {
+            id: Date.now(),
+            name: nameInput,
+            quantity: quantity,
+            category: category,
+            location: location,
+            expiry: expiry,
+            emoji: getEmoji(nameInput)
+        };
+
+        inventory.push(item);
+        this.reset();
+        document.getElementById('food-quantity').value = 1;
+
+        document.getElementById('fridge').classList.add('open');
+        updateUI();
+    });
+
+    function deleteItem(id) {
+        inventory = inventory.filter(item => item.id !== id);
+        updateUI();
+    }
+
+    function calculateDDay(expiryDateStr) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const expiryDate = new Date(expiryDateStr);
+        expiryDate.setHours(0, 0, 0, 0);
+        
+        const diffTime = expiryDate - today;
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    function generateDynamicRecipes(userItems) {
+        const dynamicRecipes = [];
+
+        userItems.forEach(item => {
+            const name = item.name;
+            const category = item.category;
+
+            if (['음료', '음료/주류', '과일', '일반 식품'].includes(category)) {
+                dynamicRecipes.push({
+                    name: `${name} 콜드 서빙`,
+                    ingredients: [name],
+                    type: '디저트/음료',
+                    note: `'${name}' 본연의 신선함을 유지하여 섭취하는 추천 방식입니다.`
+                });
+            } else if (category === '양념/소스') {
+                dynamicRecipes.push({
+                    name: `${name} 베이스 드레싱 / 볶음`,
+                    ingredients: [name],
+                    type: '소스 응용',
+                    note: `'${name}'을(를) 활용해 식재료의 풍미를 향상시킵니다.`
+                });
+            } else {
+                dynamicRecipes.push({
+                    name: `${name} 플레이트 / 가니쉬 조리`,
+                    ingredients: [name],
+                    type: '단일 재료 조리',
+                    note: `'${name}'의 질감을 살리는 메인 조리법입니다.`
+                });
+            }
+        });
+
+        if (userItems.length >= 2) {
+            const mainNames = userItems.slice(0, 3).map(i => i.name).join(' · ');
+            dynamicRecipes.unshift({
+                name: `${mainNames} 콤비네이션 조리`,
+                ingredients: userItems.slice(0, 3).map(i => i.name),
+                type: '복합 재료 조합',
+                note: '보관 중인 다중 재료를 한 번에 효율적으로 조리합니다.'
+            });
+        }
+
+        return dynamicRecipes;
+    }
+
+    function updateUI() {
+        const fridgeInside = document.getElementById('fridge-inside');
+        const capacityText = document.getElementById('capacity-text');
+        fridgeInside.innerHTML = '';
+        
+        inventory.forEach(item => {
+            const foodCard = document.createElement('div');
+            foodCard.className = 'food-card';
+            
+            const countBadge = item.quantity > 1 ? `<div class="food-count-badge">x${item.quantity}</div>` : '';
+            const stackCount = Math.min(item.quantity, 5);
+            let iconsHtml = '';
+
+            for (let i = 0; i < stackCount; i++) {
+                const offsetX = (i * 4) - ((stackCount - 1) * 2);
+                const offsetY = -(i * 4) + ((stackCount - 1) * 2);
+                const zIndex = i + 1;
+                
+                iconsHtml += `<span class="stacked-icon" style="transform: translate(${offsetX}px, ${offsetY}px); z-index: ${zIndex};">${item.emoji}</span>`;
+            }
+
+            foodCard.innerHTML = `
+                ${countBadge}
+                <div class="food-icon-stack">
+                    ${iconsHtml}
+                </div>
+                <div class="food-label">${item.name}</div>
+            `;
+            fridgeInside.appendChild(foodCard);
+        });
+
+        capacityText.innerText = `수납 현황: ${inventory.length} / ${MAX_SLOTS}`;
+
+        const tbody = document.getElementById('inventory-table');
+        tbody.innerHTML = '';
+
+        inventory.forEach(item => {
+            const dDay = calculateDDay(item.expiry);
+            let dDayText = dDay < 0 ? `기한 만료 (${Math.abs(dDay)}일 경과)` : (dDay === 0 ? '오늘 만료' : `D-${dDay}`);
+            let dDayClass = dDay <= 3 ? 'urgent' : 'safe';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${item.emoji} ${item.name}</strong></td>
+                <td>${item.quantity}개</td>
+                <td><span class="badge badge-category">${item.category}</span></td>
+                <td>${item.location}</td>
+                <td>${item.expiry}</td>
+                <td class="d-day ${dDayClass}">${dDayText}</td>
+                <td><button class="btn-delete" onclick="deleteItem(${item.id})">삭제</button></td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        const recipeList = document.getElementById('recipe-list');
+        recipeList.innerHTML = '';
+
+        if (inventory.length === 0) {
+            recipeList.innerHTML = '<p class="empty-msg">보관 항목을 등록하면 추천 레시피가 연산됩니다.</p>';
+            document.getElementById('recipe-count').innerText = '(0)';
+            return;
+        }
+
+        const userIngredientNames = inventory.map(item => normalizeName(item.name));
+
+        const matchedPresets = [];
+        presetRecipes.forEach(recipe => {
+            let missingCount = 0;
+            let missingName = '';
+
+            recipe.ingredients.forEach(options => {
+                const hasItem = options.some(opt => 
+                    userIngredientNames.some(userIng => userIng.includes(normalizeName(opt)) || normalizeName(opt).includes(userIng))
+                );
+                if (!hasItem) {
+                    missingCount++;
+                    missingName = options[0];
+                }
+            });
+
+            if (missingCount === 0) {
+                matchedPresets.push({ recipe: recipe, fullMatch: true });
+            } else if (missingCount === 1) {
+                matchedPresets.push({ recipe: recipe, fullMatch: false, missing: missingName });
+            }
+        });
+
+        const dynamicRecipes = generateDynamicRecipes(inventory);
+
+        let totalCount = matchedPresets.length + dynamicRecipes.length;
+        document.getElementById('recipe-count').innerText = `(${totalCount})`;
+
+        matchedPresets.filter(m => m.fullMatch).forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'recipe-card';
+            card.innerHTML = `
+                <div class="recipe-title">
+                    ${item.recipe.name}
+                    <span class="badge badge-ready">즉시 조리 가능</span>
+                </div>
+                <div class="recipe-ingredients">재료 구성: ${item.recipe.ingredients.map(i => i[0]).join(', ')}</div>
+                <div class="analysis-tag">${item.recipe.note}</div>
+            `;
+            recipeList.appendChild(card);
+        });
+
+        dynamicRecipes.forEach(recipe => {
+            const card = document.createElement('div');
+            card.className = 'recipe-card dynamic';
+            card.innerHTML = `
+                <div class="recipe-title">
+                    ${recipe.name}
+                    <span class="badge badge-dynamic">실시간 자동 분석</span>
+                </div>
+                <div class="recipe-ingredients">활용 재료: ${recipe.ingredients.join(', ')}</div>
+                <div class="analysis-tag">${recipe.note}</div>
+            `;
+            recipeList.appendChild(card);
+        });
+
+        matchedPresets.filter(m => !m.fullMatch).forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'recipe-card partial';
+            card.innerHTML = `
+                <div class="recipe-title">
+                    ${item.recipe.name}
+                    <span class="badge badge-partial">재료 1개 부족</span>
+                </div>
+                <div class="recipe-ingredients">
+                    보유 재료: ${item.recipe.ingredients.map(i => i[0]).join(', ')}<br>
+                    필요 재료: <span class="missing-ing">+ ${item.missing}</span>
+                </div>
+            `;
+            recipeList.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>
